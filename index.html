@@ -3,17 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>靈廟求籤 App - 2024-05-22 更新版</title>
-    <!-- 引入 React 與 Tailwind -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <title>靈廟求籤 App - 2024-05-22 修復版</title>
+    <!-- 引入 React 與 Tailwind (穩定 CDN 版本) -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入 Lucide 圖示 -->
-    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap');
-        body { font-family: 'Noto Serif TC', serif; }
+        body { font-family: 'Noto Serif TC', serif; background-color: #450a0a; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(234, 179, 8, 0.4); border-radius: 10px; }
@@ -29,8 +27,13 @@
     <div id="root"></div>
     <script type="text/babel">
         const { useState, useEffect } = React;
-        const { Scroll, Sparkles, RotateCcw, AlignCenter } = lucide;
-        // 模擬籤詩資料庫
+        // 使用內建 SVG 圖示以確保穩定性
+        const IconSparkles = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
+        );
+        const IconRotate = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+        );
         const ORACLE_DATA = [
             { level: "上上籤", title: "飛龍在天", poem: "靈籤求得第一枝，龍飛天上豈尋常，\n問到功名大有成，眼前富貴誰能比。", desc: "運勢如日中天，事業、財運皆大吉。把握良機，大展宏圖。" },
             { level: "中吉", title: "枯木逢春", poem: "枯木逢春色更鮮，花開結子喜連連，\n前程努力方為貴，閒言閒語莫聽偏。", desc: "經歷低谷後迎來轉機。堅持努力，無視流言，必有收穫。" },
@@ -52,61 +55,92 @@
                 const interval = setInterval(() => {
                     count++;
                     setShakeCount(count);
-                    if (count > 15) {
+                    if (count > 20) {
                         clearInterval(interval);
                         setGameState('revealed');
                     }
-                }, 100);
+                }, 80);
             };
             return (
-                <div className="min-h-screen bg-red-950 text-yellow-100 flex flex-col items-center relative overflow-hidden">
+                <div className="min-h-screen text-yellow-100 flex flex-col items-center relative overflow-hidden bg-red-950">
+                    {/* 背景裝飾 */}
                     <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffd700' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") }}></div>
-                    <header className="w-full p-6 text-center z-10 border-b border-red-800 bg-red-900/80 backdrop-blur-sm shadow-lg">
+                    
+                    <header className="w-full p-6 text-center z-10 border-b border-red-800 bg-red-900/90 shadow-lg">
                         <h1 className="text-4xl font-bold tracking-widest text-yellow-400 drop-shadow-md">靈廟籤詩</h1>
                         <p className="mt-2 text-red-200 text-sm tracking-widest uppercase">The Ancient Oracle</p>
                     </header>
                     <main className="flex-1 w-full max-w-4xl p-4 flex flex-col items-center justify-center z-10 relative">
                         {gameState === 'intro' && (
                             <div className="text-center animate-fade-in">
-                                <h2 className="text-2xl mb-6 text-yellow-200">誠心祈求，指點迷津</h2>
-                                <button onClick={() => setGameState('selecting')} className="px-12 py-4 bg-yellow-600 text-red-950 font-bold text-xl rounded-full shadow-lg hover:scale-105 transition-all">開始求籤</button>
+                                <h2 className="text-2xl mb-8 text-yellow-200">誠心祈求，指點迷津</h2>
+                                <button 
+                                    onClick={() => setGameState('selecting')} 
+                                    className="px-12 py-4 bg-yellow-600 text-red-950 font-bold text-xl rounded-full shadow-lg hover:scale-105 transition-all flex items-center gap-2 mx-auto"
+                                >
+                                    <IconSparkles />
+                                    開始求籤
+                                </button>
                             </div>
                         )}
                         {gameState === 'selecting' && (
                             <div className="w-full animate-fade-in">
-                                <p className="text-center mb-6 text-yellow-200 text-lg">請憑直覺點選一張靈籤</p>
-                                <div className="grid grid-cols-8 gap-3 max-h-[60vh] overflow-y-auto p-4 custom-scrollbar bg-red-900/30 rounded-xl border border-red-800">
+                                <p className="text-center mb-6 text-yellow-200 text-lg">請憑直覺點選一個號碼</p>
+                                <div className="grid grid-cols-6 sm:grid-cols-8 gap-2 max-h-[60vh] overflow-y-auto p-4 custom-scrollbar bg-red-900/30 rounded-xl border border-red-800">
                                     {numbers.map((num) => (
-                                        <button key={num} onClick={() => handleCardClick(num)} className="aspect-[2/3] bg-red-800 border border-yellow-700/30 rounded hover:bg-yellow-600 hover:text-red-900 transition-all flex items-center justify-center text-yellow-500/50 font-mono text-sm">{num}</button>
+                                        <button 
+                                            key={num} 
+                                            onClick={() => handleCardClick(num)} 
+                                            className="aspect-[2/3] bg-red-900 border border-yellow-700/30 rounded hover:bg-yellow-500 hover:text-red-950 transition-all flex items-center justify-center text-yellow-500/50 font-mono text-sm shadow-inner"
+                                        >
+                                            {num}
+                                        </button>
                                     ))}
                                 </div>
                             </div>
                         )}
                         {gameState === 'shaking' && (
-                            <div className="flex flex-col items-center justify-center h-64 relative">
-                                <div className={`w-40 h-56 bg-gradient-to-b from-yellow-800 to-red-900 rounded-t-lg border-x-4 border-b-8 border-yellow-900 shadow-2xl flex items-end justify-center overflow-hidden ${shakeCount % 2 === 0 ? 'translate-x-2 rotate-3' : '-translate-x-2 -rotate-3'} transition-transform duration-75`}>
-                                    <div className="absolute bottom-0 w-full flex justify-center gap-2 px-4">
-                                        <div className="w-3 h-32 bg-yellow-200 rounded-t-sm"></div>
-                                        <div className="w-3 h-40 bg-yellow-300 rounded-t-sm"></div>
-                                        <div className="w-3 h-36 bg-yellow-200 rounded-t-sm"></div>
+                            <div className="flex flex-col items-center justify-center h-64">
+                                <div className={`w-32 h-48 bg-gradient-to-b from-yellow-700 to-red-900 rounded-t-lg border-4 border-yellow-900 shadow-2xl flex items-end justify-center overflow-hidden ${shakeCount % 2 === 0 ? 'translate-x-2 rotate-6' : '-translate-x-2 -rotate-6'} transition-transform duration-75`}>
+                                    <div className="flex gap-1 mb-2">
+                                        <div className="w-2 h-32 bg-yellow-200 rounded-full animate-bounce"></div>
+                                        <div className="w-2 h-40 bg-yellow-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                                        <div className="w-2 h-36 bg-yellow-300 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                                     </div>
                                 </div>
-                                <p className="mt-8 text-xl text-yellow-200 animate-pulse tracking-widest">搖籤中...</p>
+                                <p className="mt-8 text-xl text-yellow-200 animate-pulse tracking-widest">正在為您求籤...</p>
                             </div>
                         )}
                         {gameState === 'revealed' && result && (
                             <div className="w-full max-w-md animate-slide-up">
-                                <div className="bg-[#FFFDF0] text-gray-800 p-8 rounded-sm shadow-2xl border-t-4 border-b-4 border-red-800 text-center">
+                                <div className="bg-[#FFFDF0] text-gray-800 p-8 rounded shadow-2xl border-t-8 border-red-800 text-center relative">
                                     <p className="text-red-800 font-bold text-lg mb-1">第 {selectedNumber} 籤</p>
-                                    <h2 className="text-3xl font-bold text-red-900 mb-2">{result.title}</h2>
-                                    <span className="inline-block px-3 py-1 bg-red-900 text-yellow-100 text-sm rounded-full mb-6">{result.level}</span>
-                                    <div className="text-xl leading-loose font-bold text-gray-900 whitespace-pre-line mb-6">{result.poem}</div>
-                                    <div className="bg-red-50 p-4 rounded border border-red-100 text-left text-sm text-gray-700">{result.desc}</div>
-                                    <button onClick={() => setGameState('intro')} className="mt-8 flex items-center gap-2 mx-auto px-6 py-3 bg-red-900 text-yellow-400 rounded-full"><RotateCcw size={18}/>誠心重求</button>
+                                    <h2 className="text-4xl font-bold text-red-900 mb-4">{result.title}</h2>
+                                    <div className="inline-block px-4 py-1 bg-red-900 text-yellow-100 text-sm rounded-full mb-8 font-bold">{result.level}</div>
+                                    
+                                    <div className="text-2xl leading-relaxed font-bold text-gray-900 whitespace-pre-line mb-8 border-y border-red-100 py-6">
+                                        {result.poem}
+                                    </div>
+                                    
+                                    <div className="bg-red-50 p-6 rounded-lg text-left">
+                                        <h4 className="text-red-800 font-bold mb-2 text-base">【 聖 意 】</h4>
+                                        <p className="text-gray-700 text-base leading-relaxed">{result.desc}</p>
+                                    </div>
+                                    <button 
+                                        onClick={() => setGameState('intro')} 
+                                        className="mt-10 flex items-center gap-2 mx-auto px-8 py-3 bg-red-900 text-yellow-400 rounded-full font-bold hover:bg-red-800 transition-colors shadow-lg"
+                                    >
+                                        <IconRotate />
+                                        誠心重求
+                                    </button>
                                 </div>
                             </div>
                         )}
                     </main>
+                    
+                    <footer className="w-full p-4 text-center text-red-400 text-xs z-10">
+                        © 2024 靈廟求籤系統 - 僅供娛樂參考
+                    </footer>
                 </div>
             );
         }
